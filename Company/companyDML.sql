@@ -98,42 +98,77 @@ ORDER BY e.ssn;
 /*(15A)
 For projects located in Houston: Find pairs of last names such that the two employees in the pair work on the same project. Remove duplicates. Sort the result by the lname in the left column in the result. 
 */
-SELECT DISTINCT e1.lname, e2.lname FROM employee e1, employee e2;
+SELECT DISTINCT e1.lname, e2.lname FROM employee e1
+LEFT JOIN employee e2 ON e1.ssn != e2.ssn
+LEFT JOIN works_on wo1 ON wo1.essn = e1.ssn
+LEFT JOIN works_on wo2 ON wo2.essn = e2.ssn
+LEFT JOIN project p ON p.pnumber = wo1.pno AND p.plocation = 'Houston'
+WHERE wo1.pno = wo2.pno AND e1.lname < e2.lname;
 --
 ------------------------------------
 --
 /*(16A) Hint: A NULL in the hours column should be considered as zero hours.
 Find the ssn, lname, and the total number of hours worked on projects for every employee whose total is less than 40 hours. Sort the result by lname
 */ 
--- <<< Your SQL code goes here >>>
+SELECT e.ssn, e.lname, SUM(wo.hours) FROM employee e
+LEFT JOIN works_on wo ON wo.essn = e.ssn
+HAVING SUM(wo.hours) < 40
+GROUP BY e.ssn, e.lname
+ORDER BY e.lname;
 --
 ------------------------------------
 -- 
 /*(17A)
-For every project that has more than 2 employees working on it: Find the project number, project name, number of employees working on it, and the total number of hours worked by all employees on that project. Sort the results by project number.
+For every project that has more than 2 employees working on it: 
+Find the project number, project name, number of employees working on it, 
+and the total number of hours worked by all employees on that project. 
+Sort the results by project number.
 */ 
--- <<< Your SQL code goes here >>>
+SELECT p.pnumber, p.pname, COUNT(wo.essn), SUM(wo.hours) FROM project p
+LEFT JOIN works_on wo ON wo.pno = p.pnumber
+HAVING COUNT(wo.essn) > 2
+GROUP BY p.pnumber, p.pname
+ORDER BY p.pnumber;
 -- 
 -- CORRELATED SUBQUERY --------------------------------
 --
 /*(18A)
-For every employee who has the highest salary in his department: Find the dno, ssn, lname, and salary . Sort the results by department number.
+For every employee who has the highest salary in his department: 
+Find the dno, ssn, lname, and salary . 
+Sort the results by department number.
 */
--- <<< Your SQL code goes here >>>
+SELECT e.dno, e.ssn, e.lname, e.salary FROM Department d
+LEFT JOIN employee e ON e.ssn = 
+                        (SELECT ssn FROM employee 
+                        WHERE dno = d.dnumber 
+                        ORDER BY e.salary DESC 
+                        FETCH FIRST 1 ROWS ONLY)
+ORDER BY e.dno;
 --
 -- NON-CORRELATED SUBQUERY -------------------------------
 --
 /*(19A)
-For every employee who does not work on any project that is located in Houston: Find the ssn and lname. Sort the results by lname
+For every employee who does not work on any project that is located in Houston: 
+Find the ssn and lname. Sort the results by lname
 */
--- <<< Your SQL code goes here >>>
+SELECT e.ssn, e.lname FROM employee e
+WHERE NOT EXISTS (SELECT wo.essn FROM works_on wo
+                    LEFT JOIN project p ON p.pnumber = wo.pno
+                    WHERE p.plocation != 'Houston' AND 
+                          p.plocation != NULL AND 
+                          wo.essn = e.ssn)
+ORDER BY e.lname;
 --
 -- DIVISION ---------------------------------------------
 --
 /*(20A) Hint: This is a DIVISION query
-For every employee who works on every project that is located in Stafford: Find the ssn and lname. Sort the results by lname
+For every employee who works on every project that is located in Stafford: 
+Find the ssn and lname. Sort the results by lname
 */
--- <<< Your SQL code goes here >>>
+SELECT e.ssn, e.lname FROM employee e
+WHERE e.ssn ALL (SELECT wo.essn FROM project p
+                LEFT JOIN works_on wo ON wo.pno = p.pnumber)
+
 --
 SET ECHO OFF
 SPOOL OFF

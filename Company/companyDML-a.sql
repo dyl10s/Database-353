@@ -1,4 +1,3 @@
-SQL> SET ECHO ON
 SQL> -- ---------------------------------------------------------------
 SQL> --
 SQL> -- Name: Dylan Strohschein
@@ -112,91 +111,32 @@ SQL> --
 SQL> /*(15A)
 SQL> For projects located in Houston: Find pairs of last names such that the two employees in the pair work on the same project. Remove duplicates. Sort the result by the lname in the left column in the result.
 SQL> */
-SQL> SELECT DISTINCT e1.lname, e2.lname FROM employee e1, employee e2;
+SQL> SELECT DISTINCT e1.lname, e2.lname FROM employee e1
+  2  LEFT JOIN employee e2 ON e1.ssn != e2.ssn
+  3  LEFT JOIN works_on wo1 ON wo1.essn = e1.ssn
+  4  LEFT JOIN works_on wo2 ON wo2.essn = e2.ssn
+  5  LEFT JOIN project p ON p.pnumber = wo1.pno AND p.plocation = 'Houston'
+  6  WHERE wo1.pno = wo2.pno AND e1.lname < e2.lname;
 
 LNAME           LNAME                                                           
 --------------- ---------------                                                 
-Smith           Wong                                                            
-Wong            Jabbar                                                          
-Wallace         Zelaya                                                          
-Wallace         Wallace                                                         
-Narayan         Smith                                                           
 English         Smith                                                           
-Smith           Zelaya                                                          
-Narayan         English                                                         
-English         Wallace                                                         
-Smith           Jabbar                                                          
-Wong            Zelaya                                                          
-
-LNAME           LNAME                                                           
---------------- ---------------                                                 
-Wong            Narayan                                                         
+Smith           Wong                                                            
+Wallace         Zelaya                                                          
 Narayan         Wong                                                            
-Narayan         Borg                                                            
-English         Zelaya                                                          
-Jabbar          English                                                         
-Jabbar          Jabbar                                                          
-Borg            Smith                                                           
-Borg            Borg                                                            
-Smith           Smith                                                           
-Smith           English                                                         
-Smith           Borg                                                            
-
-LNAME           LNAME                                                           
---------------- ---------------                                                 
-Wong            Wallace                                                         
-Wallace         Borg                                                            
-Narayan         Narayan                                                         
-English         Jabbar                                                          
-Borg            Jabbar                                                          
-Smith           Narayan                                                         
-Wong            Smith                                                           
-Wong            Wong                                                            
-Zelaya          Wallace                                                         
-Zelaya          English                                                         
-Zelaya          Jabbar                                                          
-
-LNAME           LNAME                                                           
---------------- ---------------                                                 
-Wallace         Smith                                                           
+Wong            Zelaya                                                          
 English         Wong                                                            
 Borg            Wallace                                                         
-Smith           Wallace                                                         
-Wong            English                                                         
-Wong            Borg                                                            
-Zelaya          Zelaya                                                          
-Zelaya          Narayan                                                         
 Wallace         Wong                                                            
-Narayan         Zelaya                                                          
-English         Borg                                                            
-
-LNAME           LNAME                                                           
---------------- ---------------                                                 
-Jabbar          Wallace                                                         
-Jabbar          Borg                                                            
 Borg            Wong                                                            
-Borg            Zelaya                                                          
-Zelaya          Smith                                                           
-Zelaya          Borg                                                            
-Wallace         Narayan                                                         
-Wallace         Jabbar                                                          
-Narayan         Jabbar                                                          
-English         Narayan                                                         
-English         English                                                         
+Jabbar          Wallace                                                         
+Jabbar          Wong                                                            
 
 LNAME           LNAME                                                           
 --------------- ---------------                                                 
-Jabbar          Wong                                                            
-Zelaya          Wong                                                            
-Wallace         English                                                         
-Narayan         Wallace                                                         
-Jabbar          Smith                                                           
 Jabbar          Zelaya                                                          
-Jabbar          Narayan                                                         
-Borg            Narayan                                                         
-Borg            English                                                         
 
-64 rows selected.
+12 rows selected.
 
 SQL> --
 SQL> ------------------------------------
@@ -204,34 +144,95 @@ SQL> --
 SQL> /*(16A) Hint: A NULL in the hours column should be considered as zero hours.
 SQL> Find the ssn, lname, and the total number of hours worked on projects for every employee whose total is less than 40 hours. Sort the result by lname
 SQL> */
-SQL> -- <<< Your SQL code goes here >>>
+SQL> SELECT e.ssn, e.lname, SUM(wo.hours) FROM employee e
+  2  LEFT JOIN works_on wo ON wo.essn = e.ssn
+  3  HAVING SUM(wo.hours) < 40
+  4  GROUP BY e.ssn, e.lname
+  5  ORDER BY e.lname;
+
+SSN       LNAME           SUM(WO.HOURS)                                         
+--------- --------------- -------------                                         
+987654321 Wallace                    35                                         
+
 SQL> --
 SQL> ------------------------------------
 SQL> --
 SQL> /*(17A)
-SQL> For every project that has more than 2 employees working on it: Find the project number, project name, number of employees working on it, and the total number of hours worked by all employees on that project. Sort the results by project number.
+SQL> For every project that has more than 2 employees working on it:
+SQL> Find the project number, project name, number of employees working on it,
+SQL> and the total number of hours worked by all employees on that project.
+SQL> Sort the results by project number.
 SQL> */
-SQL> -- <<< Your SQL code goes here >>>
+SQL> SELECT p.pnumber, p.pname, COUNT(wo.essn), SUM(wo.hours) FROM project p
+  2  LEFT JOIN works_on wo ON wo.pno = p.pnumber
+  3  HAVING COUNT(wo.essn) > 2
+  4  GROUP BY p.pnumber, p.pname
+  5  ORDER BY p.pnumber;
+
+   PNUMBER PNAME           COUNT(WO.ESSN) SUM(WO.HOURS)                         
+---------- --------------- -------------- -------------                         
+         2 ProductY                     3          37.5                         
+        10 Computerization              3            55                         
+        20 Reorganization               3            25                         
+        30 Newbenefits                  3            55                         
+
 SQL> --
 SQL> -- CORRELATED SUBQUERY --------------------------------
 SQL> --
 SQL> /*(18A)
-SQL> For every employee who has the highest salary in his department: Find the dno, ssn, lname, and salary . Sort the results by department number.
+SQL> For every employee who has the highest salary in his department:
+SQL> Find the dno, ssn, lname, and salary .
+SQL> Sort the results by department number.
 SQL> */
-SQL> -- <<< Your SQL code goes here >>>
+SQL> SELECT e.dno, e.ssn, e.lname, e.salary FROM Department d
+  2  LEFT JOIN employee e ON e.ssn =
+  3  			     (SELECT ssn FROM employee
+  4  			     WHERE dno = d.dnumber
+  5  			     ORDER BY e.salary DESC
+  6  			     FETCH FIRST 1 ROWS ONLY)
+  7  ORDER BY e.dno;
+
+       DNO SSN       LNAME               SALARY                                 
+---------- --------- --------------- ----------                                 
+         1 888665555 Borg                 55000                                 
+         4 999887777 Zelaya               25000                                 
+         5 123456789 Smith                30000                                 
+
 SQL> --
 SQL> -- NON-CORRELATED SUBQUERY -------------------------------
 SQL> --
 SQL> /*(19A)
-SQL> For every employee who does not work on any project that is located in Houston: Find the ssn and lname. Sort the results by lname
+SQL> For every employee who does not work on any project that is located in Houston:
+SQL> Find the ssn and lname. Sort the results by lname
 SQL> */
-SQL> -- <<< Your SQL code goes here >>>
+SQL> SELECT e.ssn, e.lname FROM employee e
+  2  WHERE NOT EXISTS (SELECT wo.essn FROM works_on wo
+  3  			 LEFT JOIN project p ON p.pnumber = wo.pno
+  4  			 WHERE p.plocation != 'Houston' AND p.plocation != NULL AND wo.essn = e.ssn);
+
+SSN       LNAME                                                                 
+--------- ---------------                                                       
+123456789 Smith                                                                 
+333445555 Wong                                                                  
+453453453 English                                                               
+666884444 Narayan                                                               
+888665555 Borg                                                                  
+987654321 Wallace                                                               
+987987987 Jabbar                                                                
+999887777 Zelaya                                                                
+
+8 rows selected.
+
 SQL> --
 SQL> -- DIVISION ---------------------------------------------
 SQL> --
 SQL> /*(20A) Hint: This is a DIVISION query
-SQL> For every employee who works on every project that is located in Stafford: Find the ssn and lname. Sort the results by lname
+SQL> For every employee who works on every project that is located in Stafford:
+SQL> Find the ssn and lname. Sort the results by lname
 SQL> */
-SQL> -- <<< Your SQL code goes here >>>
+SQL> SELECT e.ssn, e.lname FROM employee e
+  2  WHERE e.ssn ALL (SELECT wo.essn FROM project p
+  3  		     LEFT JOIN works_on wo ON wo.pno = p.pnumber)
+  4  
 SQL> --
 SQL> SET ECHO OFF
