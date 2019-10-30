@@ -153,10 +153,10 @@ Find the ssn and lname. Sort the results by lname
 */
 SELECT e.ssn, e.lname FROM employee e
 WHERE NOT EXISTS (SELECT wo.essn FROM works_on wo
-                    LEFT JOIN project p ON p.pnumber = wo.pno
-                    WHERE p.plocation != 'Houston' AND 
-                          p.plocation != NULL AND 
-                          wo.essn = e.ssn)
+                  LEFT JOIN project p ON p.pnumber = wo.pno
+                  WHERE p.plocation != 'Houston' AND 
+                        p.plocation != NULL AND 
+                        wo.essn = e.ssn)
 ORDER BY e.lname;
 --
 -- DIVISION ---------------------------------------------
@@ -165,9 +165,14 @@ ORDER BY e.lname;
 For every employee who works on every project that is located in Stafford: 
 Find the ssn and lname. Sort the results by lname
 */
-SELECT e.ssn, e.lname FROM employee e
-WHERE e.ssn ALL (SELECT wo.essn FROM project p
-                LEFT JOIN works_on wo ON wo.pno = p.pnumber)
+SELECT e.ssn, e.lname 
+FROM employee e
+WHERE NOT EXISTS ((SELECT pnumber 
+                  FROM Project 
+                  WHERE dnum = 4) 
+                  MINUS
+                  (SELECT Pno FROM works_on WHERE Essn = e.ssn))
+ORDER BY e.lname;
 
 --
 SET ECHO OFF

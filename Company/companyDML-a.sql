@@ -26,7 +26,9 @@ SQL> --
 SQL> -- JOINING 3 TABLES ------------------------------
 SQL> --
 SQL> /*(11A)
-SQL> For every employee who works more than 30 hours on any project: Find the ssn, lname, project number, project name, and numer of hours. Sort the results by ssn.
+SQL> For every employee who works more than 30 hours on any project: 
+Find the ssn, lname, project number, project name, and numer of hours. 
+Sort the results by ssn.
 SQL> */
 SQL> SELECT e.ssn, e.lname, p.pnumber, p.pname, wo.hours FROM Employee e
   2  LEFT JOIN works_on wo ON wo.essn = e.ssn
@@ -207,18 +209,21 @@ SQL> Find the ssn and lname. Sort the results by lname
 SQL> */
 SQL> SELECT e.ssn, e.lname FROM employee e
   2  WHERE NOT EXISTS (SELECT wo.essn FROM works_on wo
-  3  			 LEFT JOIN project p ON p.pnumber = wo.pno
-  4  			 WHERE p.plocation != 'Houston' AND p.plocation != NULL AND wo.essn = e.ssn);
+  3  		       LEFT JOIN project p ON p.pnumber = wo.pno
+  4  		       WHERE p.plocation != 'Houston' AND
+  5  			     p.plocation != NULL AND
+  6  			     wo.essn = e.ssn)
+  7  ORDER BY e.lname;
 
 SSN       LNAME                                                                 
 --------- ---------------                                                       
-123456789 Smith                                                                 
-333445555 Wong                                                                  
-453453453 English                                                               
-666884444 Narayan                                                               
 888665555 Borg                                                                  
-987654321 Wallace                                                               
+453453453 English                                                               
 987987987 Jabbar                                                                
+666884444 Narayan                                                               
+123456789 Smith                                                                 
+987654321 Wallace                                                               
+333445555 Wong                                                                  
 999887777 Zelaya                                                                
 
 8 rows selected.
@@ -230,9 +235,20 @@ SQL> /*(20A) Hint: This is a DIVISION query
 SQL> For every employee who works on every project that is located in Stafford:
 SQL> Find the ssn and lname. Sort the results by lname
 SQL> */
-SQL> SELECT e.ssn, e.lname FROM employee e
-  2  WHERE e.ssn ALL (SELECT wo.essn FROM project p
-  3  		     LEFT JOIN works_on wo ON wo.pno = p.pnumber)
-  4  
+SQL> SELECT e.ssn, e.lname
+  2  FROM employee e
+  3  WHERE NOT EXISTS ((SELECT pnumber
+  4  		       FROM Project
+  5  		       WHERE dnum = 4)
+  6  		       MINUS
+  7  		       (SELECT Pno FROM works_on WHERE Essn = e.ssn))
+  8  ORDER BY e.lname;
+
+SSN       LNAME                                                                 
+--------- ---------------                                                       
+987987987 Jabbar                                                                
+999887777 Zelaya                                                                
+
+SQL> 
 SQL> --
 SQL> SET ECHO OFF
