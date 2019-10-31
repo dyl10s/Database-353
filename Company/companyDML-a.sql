@@ -26,9 +26,7 @@ SQL> --
 SQL> -- JOINING 3 TABLES ------------------------------
 SQL> --
 SQL> /*(11A)
-SQL> For every employee who works more than 30 hours on any project: 
-Find the ssn, lname, project number, project name, and numer of hours. 
-Sort the results by ssn.
+SQL> For every employee who works more than 30 hours on any project: Find the ssn, lname, project number, project name, and numer of hours. Sort the results by ssn.
 SQL> */
 SQL> SELECT e.ssn, e.lname, p.pnumber, p.pname, wo.hours FROM Employee e
   2  LEFT JOIN works_on wo ON wo.essn = e.ssn
@@ -94,24 +92,28 @@ SQL> -- SELF JOIN -------------------------------------------
 SQL> --
 SQL> /*(14A)
 SQL> Write a query that consists of one block only.
-SQL> For every employee whose salary is less than 70% of his immediate supervisor's salary: Find his ssn, lname, salary; and his supervisor's ssn, lname, and salary. Sort the results by ssn.
+SQL> For every employee whose salary is less than 70% of his immediate supervisor's salary:
+SQL> Find his ssn, lname, salary; and his supervisor's ssn, lname, and salary.
+SQL> Sort the results by ssn.
 SQL> */
-SQL> SELECT e.ssn, e.lname, e.salary FROM employee e
+SQL> SELECT e.ssn, e.lname, e.salary, es.ssn, es.lname, es.salary FROM employee e
   2  LEFT JOIN employee es ON es.ssn = e.super_ssn
   3  WHERE (e.salary / es.salary < .7)
   4  ORDER BY e.ssn;
 
-SSN       LNAME               SALARY                                            
---------- --------------- ----------                                            
-453453453 English              25000                                            
-987987987 Jabbar               25000                                            
-999887777 Zelaya               25000                                            
+SSN       LNAME               SALARY SSN       LNAME               SALARY       
+--------- --------------- ---------- --------- --------------- ----------       
+453453453 English              25000 333445555 Wong                 40000       
+987987987 Jabbar               25000 987654321 Wallace              43000       
+999887777 Zelaya               25000 987654321 Wallace              43000       
 
 SQL> --
 SQL> -- USING MORE THAN ONE RANGE VARIABLE ON ONE TABLE -------------------
 SQL> --
 SQL> /*(15A)
-SQL> For projects located in Houston: Find pairs of last names such that the two employees in the pair work on the same project. Remove duplicates. Sort the result by the lname in the left column in the result.
+SQL> For projects located in Houston: Find pairs of last names such that the two employees
+SQL> in the pair work on the same project. Remove duplicates. Sort the result by the lname
+SQL> in the left column in the result.
 SQL> */
 SQL> SELECT DISTINCT e1.lname, e2.lname FROM employee e1
   2  LEFT JOIN employee e2 ON e1.ssn != e2.ssn
@@ -210,23 +212,15 @@ SQL> */
 SQL> SELECT e.ssn, e.lname FROM employee e
   2  WHERE NOT EXISTS (SELECT wo.essn FROM works_on wo
   3  		       LEFT JOIN project p ON p.pnumber = wo.pno
-  4  		       WHERE p.plocation != 'Houston' AND
-  5  			     p.plocation != NULL AND
-  6  			     wo.essn = e.ssn)
-  7  ORDER BY e.lname;
+  4  		       WHERE p.plocation = 'Houston' AND wo.essn = e.ssn)
+  5  ORDER BY e.lname;
 
 SSN       LNAME                                                                 
 --------- ---------------                                                       
-888665555 Borg                                                                  
 453453453 English                                                               
 987987987 Jabbar                                                                
-666884444 Narayan                                                               
 123456789 Smith                                                                 
-987654321 Wallace                                                               
-333445555 Wong                                                                  
 999887777 Zelaya                                                                
-
-8 rows selected.
 
 SQL> --
 SQL> -- DIVISION ---------------------------------------------

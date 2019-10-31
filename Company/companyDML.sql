@@ -86,9 +86,11 @@ ORDER BY e.lname;
 -- 
 /*(14A)
 Write a query that consists of one block only.
-For every employee whose salary is less than 70% of his immediate supervisor's salary: Find his ssn, lname, salary; and his supervisor's ssn, lname, and salary. Sort the results by ssn.  
+For every employee whose salary is less than 70% of his immediate supervisor's salary: 
+Find his ssn, lname, salary; and his supervisor's ssn, lname, and salary. 
+Sort the results by ssn.  
 */
-SELECT e.ssn, e.lname, e.salary FROM employee e
+SELECT e.ssn, e.lname, e.salary, es.ssn, es.lname, es.salary FROM employee e
 LEFT JOIN employee es ON es.ssn = e.super_ssn
 WHERE (e.salary / es.salary < .7)
 ORDER BY e.ssn;
@@ -96,7 +98,9 @@ ORDER BY e.ssn;
 -- USING MORE THAN ONE RANGE VARIABLE ON ONE TABLE -------------------
 --
 /*(15A)
-For projects located in Houston: Find pairs of last names such that the two employees in the pair work on the same project. Remove duplicates. Sort the result by the lname in the left column in the result. 
+For projects located in Houston: Find pairs of last names such that the two employees 
+in the pair work on the same project. Remove duplicates. Sort the result by the lname 
+in the left column in the result. 
 */
 SELECT DISTINCT e1.lname, e2.lname FROM employee e1
 LEFT JOIN employee e2 ON e1.ssn != e2.ssn
@@ -154,9 +158,7 @@ Find the ssn and lname. Sort the results by lname
 SELECT e.ssn, e.lname FROM employee e
 WHERE NOT EXISTS (SELECT wo.essn FROM works_on wo
                   LEFT JOIN project p ON p.pnumber = wo.pno
-                  WHERE p.plocation != 'Houston' AND 
-                        p.plocation != NULL AND 
-                        wo.essn = e.ssn)
+                  WHERE p.plocation = 'Houston' AND wo.essn = e.ssn)
 ORDER BY e.lname;
 --
 -- DIVISION ---------------------------------------------
